@@ -1,0 +1,29 @@
+﻿{
+  "id": "plains",
+  "friendlyName": "Plains",
+  "solidGroundHeight": 42,
+  "terrainHeight": 42,
+  "terrainScale": 0.25,
+  "lodes": [
+    {
+      "nodeName": "Dirt",
+      "blockID": 2,
+      "minHeight": 1,
+      "maxHeight": 255,
+      "scale": 0.1,
+      "threshold": 0.5,
+      "noiseOffset": 0.2,
+      "replaces": [ 1 ] // easycraft:stone
+    },
+    {
+      "nodeName": "Cave Air",
+      "blockID": 0,
+      "minHeight": 2,
+      "maxHeight": 128,
+      "scale": 0.2,
+      "threshold": 0.6,
+      "noiseOffset": 0.34,
+      "replaces": [ 1, 2 ] // easycraft:stone, easycraft:dirt
+    }
+  ]
+}
