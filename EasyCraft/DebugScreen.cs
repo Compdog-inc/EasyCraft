@@ -130,7 +130,7 @@ namespace EasyCraft
             if (!showDebug) return;
 
             DrawText(context, $@"
-Terrain Gen Test 1.0 (1.0/vanilla/release)
+Terrain Gen Test 0.1-apha (0.1/vanilla/alpha)
 {fps} fps T: 60 B: 0
 Integrated server @ 0 ms ticks, 0 tx, 0 rx
 C: {World.Instance.ActiveChunkCount}/{World.Instance.LoadedChunkCount} D: {World.Instance.ViewDistance}, pC: 000, pU: 00, aB: 0
