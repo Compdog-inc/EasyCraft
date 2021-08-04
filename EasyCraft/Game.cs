@@ -197,12 +197,25 @@ namespace EasyCraft
             TryRun(()=>Input.Init());
 
             TryRun(()=>InitScene());
-            Foreach(Behavior.frameUpdateObjects, (beh) => { if (beh.active) TryRun(()=>beh.Awake()); });
-            Foreach(Behavior.frameUpdateObjects, (beh) => { if (beh.active) TryRun(()=>beh.Start()); });
+
+            Foreach(Behavior.frameUpdateObjects, (beh) => {
+                if (!beh._active && beh.active) TryRun(()=>beh.OnEnable());
+                if (beh._active && !beh.active) TryRun(()=>beh.OnDisable());
+                beh._active = beh.active;
+            });
+
+            Foreach(Behavior.frameUpdateObjects, (beh) => { if (beh.activeSelf) TryRun(()=>beh.Awake()); });
+            Foreach(Behavior.frameUpdateObjects, (beh) => { if (beh.activeSelf) TryRun(()=>beh.Start()); });
 
             lastUpdateTicks = DateTime.Now.Ticks;
 
             RenderLoop.Run(Global.window, RenderCallback);
+
+            Foreach(Behavior.frameUpdateObjects, (beh) => {
+                beh.active = false;
+                beh._active = false;
+                TryRun(() => beh.OnDisable());
+            });
 
             while (Behavior.objects.Count > 0)
             {
@@ -235,15 +248,21 @@ namespace EasyCraft
             Time.time += Time.deltaTime;
             Time.timeSinceLastFixedDelta += Time.deltaTime;
 
+            Foreach(Behavior.frameUpdateObjects, (beh) => {
+                if (!beh._active && beh.active) TryRun(() => beh.OnEnable());
+                if (beh._active && !beh.active) TryRun(() => beh.OnDisable());
+                beh._active = beh.active;
+            });
+
             if (Time.timeSinceLastFixedDelta >= Time.fixedDeltaTime)
             {
-                Foreach(Behavior.frameUpdateObjects, (beh) => { if (beh.active) TryRun(()=>beh.FixedUpdate()); });
+                Foreach(Behavior.frameUpdateObjects, (beh) => { if (beh.activeSelf) TryRun(()=>beh.FixedUpdate()); });
                 Time.timeSinceLastFixedDelta = 0f;
             }
 
-            Foreach(Behavior.frameUpdateObjects, (beh) => { if (beh.active) TryRun(() => beh.Update()); });
+            Foreach(Behavior.frameUpdateObjects, (beh) => { if (beh.activeSelf) TryRun(() => beh.Update()); });
 
-            Foreach(Behavior.frameUpdateObjects, (beh) => { if (beh.active) TryRun(() => beh.LateUpdate()); });
+            Foreach(Behavior.frameUpdateObjects, (beh) => { if (beh.activeSelf) TryRun(() => beh.LateUpdate()); });
 
             Draw();
 
@@ -251,7 +270,7 @@ namespace EasyCraft
 
             if (App.IsQuitting)
             {
-                Foreach(Behavior.frameUpdateObjects, (beh) => { if (beh.active) TryRun(()=>beh.OnApplicationQuit()); });
+                Foreach(Behavior.frameUpdateObjects, (beh) => { if (beh.activeSelf) TryRun(()=>beh.OnApplicationQuit()); });
                 if (App.IsQuitting)
                     Global.window.Close();
             }
@@ -277,7 +296,7 @@ namespace EasyCraft
 
             MeshRenderer.RenderedInstances = 0;
             // Render
-            Foreach(Behavior.frameRenderObjects, (beh) => { if (beh.active) TryRun(()=>beh.Render(Global.deviceContext)); });
+            Foreach(Behavior.frameRenderObjects, (beh) => { if (beh.activeSelf) TryRun(()=>beh.Render(Global.deviceContext)); });
 
             try
             {

@@ -85,9 +85,14 @@ namespace EasyCraft
 
         public int GetVoxelR(Vector3 pos)
         {
+            if (pos.X < 0 || pos.Y < 0 || pos.Z < 0)
+            {
+                return 0;
+            }
+
             int index = Mathf.GetIndexFromVector3(pos, mapWidth, mapHeight);
-            if (index < voxelMap.Length && index >= 0)
-                return voxelMap[Mathf.GetIndexFromVector3(pos, mapWidth, mapHeight)];
+            if (index < voxelMap.Length)
+                return voxelMap[index];
             return 0;
         }
 
@@ -98,6 +103,10 @@ namespace EasyCraft
 
         public int GetVoxel(Vector3 pos)
         {
+            if (pos.X < 0 || pos.Z < 0)
+            {
+            }
+
             pos -= position;
             int index = Mathf.GetIndexFromVector3(pos, mapWidth, mapHeight);
             if (index < voxelMap.Length && index >= 0)

@@ -12,15 +12,15 @@ namespace EasyCraft.engine
 {
     public class Behavior
     {
-        public static List<Behavior> frameUpdateObjects = new List<Behavior>();
-        public static List<Behavior> frameRenderObjects = new List<Behavior>();
-        public static List<Behavior> objects = new List<Behavior>();
+        internal static List<Behavior> frameUpdateObjects = new List<Behavior>();
+        internal static List<Behavior> frameRenderObjects = new List<Behavior>();
+        internal static List<Behavior> objects = new List<Behavior>();
 
         public string name { get; set; }
 
         public Behavior()
         {
-            if(!objects.Contains(this))
+            if (!objects.Contains(this))
                 objects.Add(this);
             SubscribeUpdate();
         }
@@ -70,9 +70,13 @@ namespace EasyCraft.engine
             return App.SafeDispose(d, this);
         }
 
+        public bool activeSelf { get => active && _active; }
+
         public Transform transform = new Transform();
         public bool active = true;
         public bool AllowRender { get; protected set; } = true;
+
+        internal bool _active = false;
 
         public void Destroy()
         {
@@ -88,6 +92,8 @@ namespace EasyCraft.engine
         public virtual void Update() { }
         public virtual void FixedUpdate() { }
         public virtual void LateUpdate() { }
+        public virtual void OnEnable() { }
+        public virtual void OnDisable() { }
         public virtual void OnDestroy() { }
         public virtual void OnApplicationQuit() { }
 

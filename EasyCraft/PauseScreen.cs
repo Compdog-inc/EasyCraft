@@ -19,11 +19,17 @@ namespace EasyCraft
         private Vector2 screenSize;
         private Vector2 prevScreenSize;
 
-        public override void Awake()
+        private bool loaded = false;
+
+        public override void OnEnable()
         {
-            textFormat = new DW.TextFormat(Global.dwFactory, "Segoe UI", 32f);
-            textBrush = new D2D1.SolidColorBrush(Global.deviceContext2D, new RawColor4(1, 1, 1, 1));
-            tintBrush = new D2D1.SolidColorBrush(Global.deviceContext2D, new RawColor4(0, 0, 0, 0.5f));
+            if (!loaded)
+            {
+                loaded = true;
+                textFormat = new DW.TextFormat(Global.dwFactory, "Segoe UI", 32f);
+                textBrush = new D2D1.SolidColorBrush(Global.deviceContext2D, new RawColor4(1, 1, 1, 1));
+                tintBrush = new D2D1.SolidColorBrush(Global.deviceContext2D, new RawColor4(0, 0, 0, 0.5f));
+            }
         }
 
         public override void Start()
@@ -45,9 +51,13 @@ namespace EasyCraft
 
         public override void OnDestroy()
         {
-            dispose(textBrush);
-            dispose(textFormat);
-            dispose(tintBrush);
+            if (loaded)
+            {
+                loaded = false;
+                dispose(textBrush);
+                dispose(textFormat);
+                dispose(tintBrush);
+            }
         }
     }
 }

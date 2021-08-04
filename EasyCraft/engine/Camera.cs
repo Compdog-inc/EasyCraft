@@ -126,13 +126,13 @@ namespace EasyCraft.engine
             context.ClearRenderTargetView(renderTargetView, ClearColor);
             context.ClearDepthStencilView(depthStencilView, D3D11.DepthStencilClearFlags.Depth, 1f, 0);
 
-            Foreach(Behavior.frameUpdateObjects, (beh) => { if (beh.AllowRender && beh.active) beh.Render(context); });
+            Foreach(Behavior.frameUpdateObjects, (beh) => { if (beh.AllowRender && beh.activeSelf) beh.Render(context); });
 
             if (current == main)
             {
                 Global.deviceContext2D.SaveDrawingState(Global.stateBlock);
                 Global.deviceContext2D.BeginDraw();
-                Foreach(Behavior.frameUpdateObjects, (beh) => { if (beh.AllowRender && beh.active) beh.Render2D(Global.deviceContext2D); });
+                Foreach(Behavior.frameUpdateObjects, (beh) => { if (beh.AllowRender && beh.activeSelf) beh.Render2D(Global.deviceContext2D); });
                 Global.deviceContext2D.EndDraw();
                 Global.deviceContext2D.RestoreDrawingState(Global.stateBlock);
             }

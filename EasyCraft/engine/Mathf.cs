@@ -180,32 +180,36 @@ namespace EasyCraft.engine
 
         public static int GetIndexFromVector3(Vector3 pos, int width, int height)
         {
-            if (pos.X < 0)
+            int x = FloorToInt(pos.X);
+            int y = FloorToInt(pos.Y);
+            int z = FloorToInt(pos.Z);
+
+            if (x < 0)
             {
-                throw new ArgumentOutOfRangeException("pos.X", pos.X, "Arrays cannot have negative indices.");
+                throw new ArgumentOutOfRangeException("x", x, "Arrays cannot have negative indices.");
             }
 
-            if (pos.Y < 0)
+            if (y < 0)
             {
-                throw new ArgumentOutOfRangeException("pos.Y", pos.Y, "Arrays cannot have negative indices.");
+                throw new ArgumentOutOfRangeException("y", y, "Arrays cannot have negative indices.");
             }
 
-            if (pos.Z < 0)
+            if (z < 0)
             {
-                throw new ArgumentOutOfRangeException("pos.Z", pos.Z, "Arrays cannot have negative indices.");
+                throw new ArgumentOutOfRangeException("z", z, "Arrays cannot have negative indices.");
             }
 
-            if (pos.X >= width)
+            if (x >= width)
             {
-                throw new ArgumentOutOfRangeException("pos.X", pos.X, "X was bigger than width.");
+                throw new ArgumentOutOfRangeException("x", x, "X was bigger than width.");
             }
 
-            if (pos.Y >= height)
+            if (y >= height)
             {
-                throw new ArgumentOutOfRangeException("pos.Y", pos.Y, "Y was bigger than height.");
+                throw new ArgumentOutOfRangeException("y", y, "Y was bigger than height.");
             }
 
-            return FloorToInt(pos.X + pos.Y * width + pos.Z * (width * height));
+            return x + y * width + z * (width * height);
         }
     }
 }
