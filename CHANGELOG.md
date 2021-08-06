@@ -10,6 +10,7 @@
 - Scene management
 - Direct3D debug layer
 - New UI in pause menu
+- Changelog
 
 ### Changed
 
