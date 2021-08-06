@@ -22,7 +22,7 @@
 
 - Pause menu crashing on activation
 
-## [0.1.0-alpha] - 2021-08-4
+## [0.1.0-alpha] - 2021-08-04
 
 ### Added
 
