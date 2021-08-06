@@ -1,7 +1,12 @@
-﻿struct VSInput {
+﻿Texture2D MainTexture : register(t0);
+SamplerState MainTextureSampler : register(s0);
+
+struct VSInput {
     float4 position : POSITION;
     float4 color : COLOR;
     float2 uv : TEXCOORD;
+    float3 normal : NORMAL;
+    float3 tangent : TANGENT;
 };
 
 struct PSInput
@@ -9,6 +14,8 @@ struct PSInput
     float4 position : SV_POSITION;
     float4 color : COLOR;
     float2 uv : TEXCOORD;
+    float3 normal : NORMALWS;
+    float3 tangent : TANGENTWS;
     float3 worldPosition : POSITIONWS;
 };
 
@@ -36,6 +43,10 @@ PSInput VSMain(VSInput input)
 
     output.worldPosition = mul(input.position, modelTransform).xyz;
 
+    output.normal = normalize(mul(input.normal, (float3x3)modelTransform));
+
+    output.tangent = normalize(mul(input.tangent, (float3x3)modelTransform));
+
     output.uv = input.uv;
     output.color = input.color;
 
@@ -57,15 +68,22 @@ PSOutput PSMain(PSInput input)
 {
     PSOutput output;
 
-    float3 diffuse;
+    float3 N = input.normal;
+    float3 T = normalize(input.tangent - N * dot(input.tangent, N));
+    float3 bitangent = cross(T, N);
 
-    if ((input.uv.x % 1 <= 0.5f && input.uv.y % 1 <= 0.5f) || (input.uv.x % 1 >= 0.5f && input.uv.y % 1 >= 0.5f))
-        diffuse = float3(0, 0, 0);
-    else
-        diffuse = float3(1, 0, 1);
+    float3x3 tangentFrame = float3x3(normalize(input.tangent), normalize(bitangent), normalize(input.normal));
+
+    float3 normal = float3(0.5f, 0.5f, 1.0f);
+    normal = normalize(normal * 2.0f - 1.0f);
+
+    float3 normalWS = mul(normal, tangentFrame);
+
+    float3 diffuse = MainTexture.Sample(MainTextureSampler, input.uv).rgb;
+    diffuse *= input.color.rbg;
 
     output.Position = float4(input.worldPosition, 1.0f);
-    output.Normal = float4(0, 0, 0, 1.0f);
+    output.Normal = float4(normalWS, 1.0f);
     output.Diffuse = float4(diffuse, 1.0f);
 
     return output;

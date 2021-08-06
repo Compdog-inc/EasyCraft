@@ -13,6 +13,8 @@ namespace EasyCraft
         MeshRenderer chunkRenderer;
         int vertexIndex = 0;
         List<Vector3> vertices = new List<Vector3>();
+        List<Vector3> normals = new List<Vector3>();
+        List<Vector3> tangents = new List<Vector3>();
         List<Color4> colors = new List<Color4>();
         List<int> triangles = new List<int>();
         List<Vector2> uvs = new List<Vector2>();
@@ -103,14 +105,10 @@ namespace EasyCraft
 
         public int GetVoxel(Vector3 pos)
         {
-            if (pos.X < 0 || pos.Z < 0)
-            {
-            }
-
             pos -= position;
             int index = Mathf.GetIndexFromVector3(pos, mapWidth, mapHeight);
             if (index < voxelMap.Length && index >= 0)
-                return voxelMap[Mathf.GetIndexFromVector3(pos, mapWidth, mapHeight)];
+                return voxelMap[index];
             return 0;
         }
 
@@ -124,6 +122,10 @@ namespace EasyCraft
             int x = Mathf.FloorToInt(pos.X);
             int y = Mathf.FloorToInt(pos.Y);
             int z = Mathf.FloorToInt(pos.Z);
+
+            if (World.Instance.WorldLoaded && (x < 0 || z < 0))
+            {
+            }
 
             if (!IsVoxelInChunk(x, y, z))
                 return World.Instance.GetBlockType(World.Instance.GetVoxel(pos + position)).solid;
@@ -148,6 +150,16 @@ namespace EasyCraft
                     vertices.Add(pos + StaticData.voxelVerts[StaticData.voxelTris[p, 1]]);
                     vertices.Add(pos + StaticData.voxelVerts[StaticData.voxelTris[p, 2]]);
                     vertices.Add(pos + StaticData.voxelVerts[StaticData.voxelTris[p, 3]]);
+
+                    normals.Add(StaticData.voxelNormals[p]);
+                    normals.Add(StaticData.voxelNormals[p]);
+                    normals.Add(StaticData.voxelNormals[p]);
+                    normals.Add(StaticData.voxelNormals[p]);
+
+                    tangents.Add(StaticData.voxelTangents[p]);
+                    tangents.Add(StaticData.voxelTangents[p]);
+                    tangents.Add(StaticData.voxelTangents[p]);
+                    tangents.Add(StaticData.voxelTangents[p]);
 
                     AddAO(pos, p, aointensity);
                     uvs.AddRange(StaticData.voxelUvs);
@@ -202,6 +214,8 @@ namespace EasyCraft
         void ClearMeshData()
         {
             vertices.Clear();
+            normals.Clear();
+            tangents.Clear();
             triangles.Clear();
             colors.Clear();
             uvs.Clear();
@@ -213,10 +227,15 @@ namespace EasyCraft
         {
             Mesh mesh = new Mesh();
             mesh.vertices = vertices.ToArray();
+            mesh.normals = normals.ToArray();
+            mesh.tangents = tangents.ToArray();
             mesh.triangles = triangles.ToArray();
             mesh.colors = colors.ToArray();
             mesh.uv = uvs.ToArray();
             mesh.id = ids.ToArray();
+
+            mesh.RecalculateNormals();
+            mesh.RecalculateTangents();
 
             chunkRenderer.mesh = mesh;
         }
@@ -225,7 +244,6 @@ namespace EasyCraft
         {
             chunkRenderer.material.Dispose();
             chunkRenderer.material = new Material(World.Instance.ChunkMaterial);
-
         }
     }
 }

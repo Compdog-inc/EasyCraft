@@ -49,14 +49,12 @@ namespace EasyCraft
             log("Reload");
             dispose(debugRenderer.material); 
             debugRenderer.material = new Material();
-            debugRenderer.material.shader = Shader.FromFile("shaders/unlit.hlsl");
+            debugRenderer.material.shader = Shader.FromFile("shaders/error.hlsl");
             debugRenderer.material.textures.Add(ShaderTexture2D.FromFile("easycraft/textures/blocks/stone.png"));
         }
 
         public override void Start()
         {
-            Input.CursorMode = CursorMode.Lock;
-            Input.ShowCursor = false;
             camera = Camera.main.transform;
             camera.localPosition = new Vector3(0, 1.8f, 0);
 
@@ -252,7 +250,7 @@ namespace EasyCraft
             }
             else
             {
-                if (!World.Instance.WorldLoaded)
+                if (!World.Instance.WorldLoaded || paused)
                     return;
                 CalculateVelocity();
                 if (jumpRequest)
@@ -268,9 +266,11 @@ namespace EasyCraft
         {
             GetPlayerInputs();
 
-            if(World.Instance.WorldLoaded && Input.GetKeyDown(WIN.Keys.Escape))
+            if (World.Instance.WorldLoaded && Input.GetKeyDown(WIN.Keys.Escape))
             {
                 paused = !paused;
+                Input.CursorMode = paused ? CursorMode.Normal : CursorMode.Lock;
+                Input.ShowCursor = paused;
             }
         }
 

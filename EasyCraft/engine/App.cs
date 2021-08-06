@@ -10,6 +10,36 @@ using System.Windows.Forms;
 
 namespace EasyCraft.engine
 {
+    public enum AlertStyle
+    {
+        None,
+        Info,
+        Warning,
+        Error
+    }
+
+    public enum AlertResult
+    {
+        None,
+        OK,
+        Cancel,
+        Abort,
+        Retry,
+        Ignore,
+        Yes,
+        No
+    }
+
+    public enum AlertButtons
+    {
+        OK,
+        OKCancel,
+        AbortRetryIgnore,
+        YesNoCancel,
+        YesNo,
+        RetryCancel
+    }
+
     public static class App
     {
         [DllImport("kernel32.dll")]
@@ -21,6 +51,7 @@ namespace EasyCraft.engine
         public static bool IsThreadLocked { get; private set; } = false;
         public static bool IsThreadDone { get; internal set; } = false;
         public static bool ConsoleStarted { get => Program.console.IsOpen; }
+        public static Arguments ProcessArgs { get; set; }
 
         public static void Quit()
         {
@@ -73,6 +104,19 @@ namespace EasyCraft.engine
                 t.Abort();
                 throw e;
             }));
+        }
+
+        public static AlertResult ShowAlert(string text, string title = "Easy Craft Alert", bool captive = true, AlertStyle style = AlertStyle.None, AlertButtons buttons = AlertButtons.OK)
+        {
+            return (AlertResult)(int)MessageBox.Show(captive ? Global.window : null, text, title, (MessageBoxButtons)(int)buttons,
+                style == AlertStyle.Info ? MessageBoxIcon.Information :
+                style == AlertStyle.Warning ? MessageBoxIcon.Warning :
+                style == AlertStyle.Error ? MessageBoxIcon.Error : MessageBoxIcon.None);
+        }
+
+        public static Task<AlertResult> ShowAlertAsync(string text, string title = "Easy Craft Alert", AlertStyle style = AlertStyle.None, AlertButtons buttons = AlertButtons.OK)
+        {
+            return new Task<AlertResult>(() => ShowAlert(text, title, false, style, buttons));
         }
     }
 }

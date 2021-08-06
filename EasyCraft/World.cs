@@ -163,6 +163,8 @@ namespace EasyCraft
                 playerLastChunkCoord = GetChunkCoordFromVector3(player.transform.position);
                 GenerateWorld();
                 generationScreen.active = false;
+                Input.CursorMode = CursorMode.Lock;
+                Input.ShowCursor = false;
                 WorldLoaded = true;
             })).Start();
         }

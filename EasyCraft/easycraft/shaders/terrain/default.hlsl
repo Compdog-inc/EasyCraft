@@ -1,7 +1,4 @@
-﻿#define FOG_START_Y 140
-#define FOG_END_Y 200
-
-Texture2DArray ChunkTextures : register(t0);
+﻿Texture2DArray ChunkTextures : register(t0);
 SamplerState ChunkTexturesSampler : register(s0);
 
 struct VSInput {
@@ -9,6 +6,7 @@ struct VSInput {
     float4 color : COLOR;
     float2 uv : TEXCOORD;
     float3 normal : NORMAL;
+    float3 tangent : TANGENT;
     float id : ID;
 };
 
@@ -16,11 +14,17 @@ struct PSInput
 {
     float4 position : SV_POSITION;
     float4 color : COLOR;
-    float4 viewPosition : VIEWPOS;
-    float3 viewNormal : VIEWNORMAL;
-    float id : ID;
-    float3 worldPosition : WORLD_POSITION;
     float2 uv : TEXCOORD;
+    float3 normal : NORMALWS;
+    float3 tangent : TANGENTWS;
+    float3 worldPosition : POSITIONWS;
+    float id : ID;
+};
+
+struct PSOutput {
+    float4 Position : SV_Target0;
+    float4 Normal : SV_Target1;
+    float4 Diffuse : SV_Target2;
 };
 
 cbuffer Transformations: register(b0)
@@ -36,15 +40,17 @@ PSInput VSMain(VSInput input)
 
     input.position.w = 1.0f;
 
-    output.viewPosition = mul(mul(input.position, modelTransform), viewTransform);
-    output.position = mul(output.viewPosition, projTransform);
-    output.worldPosition = output.position.xyz;
+    float4x4 worldViewProj = mul(mul(modelTransform, viewTransform), projTransform);
+    output.position = mul(input.position, worldViewProj);
 
-    float3x3 normalMatrix = (float3x3)mul(modelTransform, viewTransform);
-    output.viewNormal = mul(input.normal.xyz, normalMatrix);
+    output.worldPosition = mul(input.position, modelTransform).xyz;
 
-    output.color = input.color;
+    output.normal = normalize(mul(input.normal, (float3x3)modelTransform));
+
+    output.tangent = normalize(mul(input.tangent, (float3x3)modelTransform));
+
     output.uv = input.uv;
+    output.color = input.color;
     output.id = input.id;
 
     return output;
@@ -61,73 +67,46 @@ cbuffer GlobalData: register(b0)
     float Time;
 };
 
-cbuffer LightSource: register(b1)
-{
-    float4 lightViewPosition;
-    float4 lightColor;
-};
-
-float4 BlinnPhong(PSInput input, float4 color, float4 specularShine, float4 ambient) {
-    float3 l = lightViewPosition.xyz - input.viewPosition.xyz;
-    float d_sq = dot(l, l);
-    l = normalize(l);
-
-    float3 n = normalize(input.viewNormal);
-    float3 v = normalize(-input.viewPosition.xyz);
-    float nDotL = dot(n, l);
-
-    float lightPower = lightColor.w / d_sq;
-    float lambertian = max(nDotL, 0.0);
-    float3 diffuseColor = color.rgb * lightColor.rgb;
-
-    float3 h = normalize(l + v);
-    float specular = nDotL > 0.0 ? dot(h, n) : 0.0;
-    if (specular > 0.0)
-    {
-        specular = pow(specular, specularShine.w);
-    }
-    float3 specularColor = specularShine.rgb * lightColor.rgb;
-
-    return float4(ambient.rgb
-        + diffuseColor * lambertian * lightPower
-        + specularColor * specular * lightPower, color.w);
-}
-
-float4 Blockframe(float4 color, float2 uv, float width) {
+float3 Blockframe(float3 color, float2 uv, float width) {
     if (uv.x % 1 <= width || uv.x % 1 >= 1 - width || uv.y % 1 <= width || uv.y % 1 >= 1 - width) {
-        return float4(0,0,0,1);
+        return float3(0,0,0);
     }
     return color;
 }
 
-float4 PSMain(PSInput input) : SV_TARGET
+PSOutput PSMain(PSInput input)
 {
+    PSOutput output;
+
+    float3 N = input.normal;
+    float3 T = normalize(input.tangent - N * dot(input.tangent, N));
+    float3 bitangent = cross(T, N);
+
+    float3x3 tangentFrame = float3x3(normalize(input.tangent), normalize(bitangent), normalize(input.normal));
+
+    float3 normal = float3(0.5f, 0.5f, 1.0f);
+    normal = normalize(normal * 2.0f - 1.0f);
+
+    float3 normalWS = mul(normal, tangentFrame);
+
+    float3 diffuse;
+
     if (input.id < 0) {
         if ((input.uv.x % 1 <= 0.5f && input.uv.y % 1 <= 0.5f) || (input.uv.x % 1 >= 0.5f && input.uv.y % 1 >= 0.5f))
-            return float4(0, 0, 0, 1);
+            diffuse = float3(0, 0, 0);
         else
-            return float4(1, 0, 1, 1);
+            diffuse = float3(1, 0, 1);
+    }
+    else {
+        diffuse = ChunkTextures.Sample(ChunkTexturesSampler, float3(input.uv, input.id)).rgb;
+        diffuse *= input.color.rbg;
+
+        //diffuse = Blockframe(diffuse, input.uv, 0.05);
     }
 
-    float4 materialAmbientColor = float4(0.2, 0.1, 0.5, 1);
-    float4 materialSpecular = float4(1, 1, 1, 0.5);
+    output.Position = float4(input.worldPosition, 1.0f);
+    output.Normal = float4(normalWS, 1.0f);
+    output.Diffuse = float4(diffuse, 1.0f);
 
-    float distCam = distance(CameraPosition, input.worldPosition);
-    float distCamXZ = distance(float3(CameraPosition.x, input.worldPosition.y, CameraPosition.z), input.worldPosition);
-    float distCamY = abs(CameraPosition.y - input.worldPosition.y);
-
-    float4 color = ChunkTextures.Sample(ChunkTexturesSampler, float3(input.uv, input.id));
-    color.rgb *= input.color.rbg;
-
-    color = lerp(Blockframe(color, input.uv, 0.05), color, (clamp(distCam, 10, 20) - 10) / (20 - 10));
-
-    //color = BlinnPhong(input, color, materialSpecular, materialAmbientColor);
-
-    if (FogStart >= 0 && FogEnd > FogStart)
-        color = lerp(color, FogColor, (clamp(distCamXZ, FogStart, FogEnd) - FogStart) / (FogEnd - FogStart));
-
-    if (FOG_START_Y >= 0 && FOG_END_Y > FOG_START_Y)
-        color = lerp(color, FogColor, (clamp(distCamY, FOG_START_Y, FOG_END_Y) - FOG_START_Y) / (FOG_END_Y - FOG_START_Y));
-
-    return color;
+    return output;
 }

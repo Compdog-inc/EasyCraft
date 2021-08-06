@@ -114,7 +114,6 @@ namespace EasyCraft.engine
                 else
                     Cursor.Hide();
             }
-
             else Cursor.Show();
         }
 
@@ -141,12 +140,6 @@ namespace EasyCraft.engine
 
             if (keys.ContainsKey(e.Key)) keys[e.Key] = state;
             else keys.Add(e.Key, state);
-
-            if(e.Key == Keys.Escape && e.State == RIN.KeyState.KeyDown)
-            {
-                isDeactivated = true;
-                Cursor.Show();
-            }
         }
 
         public static float GetAxis(string name)

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows.Forms;
 using EasyCraft.engine;
 using System.IO;
 using System.Threading.Tasks;
@@ -7,6 +6,7 @@ using System.Threading;
 using System.IO.Pipes;
 using System.Collections.Generic;
 using ConsoleWrapper;
+using System.Runtime.InteropServices;
 
 namespace EasyCraft
 {
@@ -19,8 +19,9 @@ namespace EasyCraft
         {
             ExceptionHandler.CatchExceptions(AppDomain.CurrentDomain, (sender, terminating, e) =>
             {
-                Environment.ExitCode = App.ExitCode = e.HResult;
-                Debug.LogError(e.Message.TrimEnd() + "\n" + e.StackTrace.TrimEnd() + (terminating ? "\nThe application will now terminate." : ""), sender);
+                ExternalException ext = (ExternalException)e;
+                Environment.ExitCode = App.ExitCode = ext.ErrorCode;
+                Debug.LogError($"[{ext.ErrorCode}]" + e.Message.TrimEnd() + "\n" + e.StackTrace.TrimEnd() + (terminating ? "\nThe application will now terminate." : ""), sender);
 
                 string logFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"TerrainGenTest\crash\");
                 if (!Directory.Exists(logFile)) Directory.CreateDirectory(logFile);
@@ -28,7 +29,7 @@ namespace EasyCraft
                 using (StreamWriter writer = new StreamWriter(logFile))
                     Debug.WriteLog(writer);
 
-                if (MessageBox.Show(Global.window, "Error: " + e.Message.TrimEnd() + (terminating ? "\nThe application will now terminate.\nDo you want to send a crash report?" : ""), "AppDomain Error", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
+                if (App.ShowAlert($"Error [{ext.ErrorCode}]: " + e.Message.TrimEnd() + (terminating ? "\nThe application will now terminate.\nDo you want to send a crash report?" : ""), "AppDomain Error", true, AlertStyle.Error, AlertButtons.YesNo) == AlertResult.Yes)
                 {
                     System.Diagnostics.Process.Start("CrashHandler.exe", $"/C \"{logFile}\"");
                 }
@@ -39,7 +40,8 @@ namespace EasyCraft
             console.ConsoleClosed += (s, e) => System.Console.WriteLine("Console cloed with exit code " + e.ExitCode);
             console.PipeOverflow += (s, e) => System.Console.WriteLine("Pipe overflow! Batching calls");
 
-            switch(console.Create(out Exception ex)){
+            switch (console.Create(out Exception ex))
+            {
                 case ConsoleResult.CREATE_ERROR:
                     System.Console.WriteLine("Error creating process: " + ex);
                     break;
@@ -51,7 +53,7 @@ namespace EasyCraft
                     break;
             }
 
-            using (Game game = new Game())
+            using (Game game = new Game(args))
             {
                 game.Run();
             }

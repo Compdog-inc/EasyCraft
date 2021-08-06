@@ -49,6 +49,9 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -98,7 +101,9 @@
     <Compile Include="DebugScreen.cs" />
     <Compile Include="engine\App.cs" />
     <Compile Include="engine\Behavior.cs" />
+    <Compile Include="engine\BuildManager.cs" />
     <Compile Include="engine\Camera.cs" />
+    <Compile Include="engine\CommandLine.cs" />
     <Compile Include="engine\Debug.cs" />
     <Compile Include="engine\DirectionalLight.cs" />
     <Compile Include="engine\extensions\MathUtilExtensions.cs" />
@@ -113,6 +118,8 @@
     <Compile Include="engine\MeshRenderer.cs" />
     <Compile Include="engine\Random.cs" />
     <Compile Include="engine\RenderSettings.cs" />
+    <Compile Include="engine\Scene.cs" />
+    <Compile Include="engine\SceneManager.cs" />
     <Compile Include="engine\ShaderTexture2D.cs" />
     <Compile Include="engine\TextureLoader.cs" />
     <Compile Include="GenerationScreen.cs" />
@@ -125,6 +132,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="scenes\Game.cs" />
     <Compile Include="StaticData.cs" />
     <Compile Include="World.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -156,17 +164,17 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="app.ico" />
     <Content Include="easycraft\shaders\terrain\default.hlsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="shaders\error.hlsl" />
-    <Content Include="shaders\flatlit.hlsl">
+    <Content Include="shaders\passes\debug.hlsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="shaders\include\math.hlsl">
+    <Content Include="shaders\error.hlsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="shaders\unlit.hlsl">
+    <Content Include="shaders\lit.hlsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="easycraft\textures\blocks\bedrock.png">

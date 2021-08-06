@@ -14,10 +14,8 @@ namespace EasyCraft.engine
 {
     public static class Global
     {
+        public static Game game;
         public static RenderForm window;
-#if DEBUG
-        public static D3D11.DeviceDebug debug;
-#endif
         public static D3D11.Device3 device;
         public static D2D1.Device device2D;
         public static D3D11.DeviceContext deviceContext;
