@@ -39,5 +39,5 @@
 - Crash handler
 - Launcher
 
-[unreleased]: https://github.com/Compdog-inc/EasyCraft/compare/v0.1.0-alpha..master
+[unreleased]: https://github.com/Compdog-inc/EasyCraft/compare/v0.1.0-alpha...master
 [0.1.0-alpha]: https://github.com/Compdog-inc/EasyCraft/releases/tag/v0.1.0-alpha
